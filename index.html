@@ -52,6 +52,9 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;fl
 .step{display:flex;flex-direction:column;gap:16px}
 .step h1:focus{outline:none}
 .hint{font-size:1.05rem}
+.does{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.does li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;font-weight:600;background:var(--ok-bg);border-radius:12px;padding:14px}
+.does li::before{content:"✓";width:30px;height:30px;border-radius:8px;background:var(--ok);color:var(--surface);display:grid;place-items:center;font-weight:700}
 .deal{background:var(--mark);color:var(--mark-ink);font-weight:600;padding:8px 12px;border-radius:8px;align-self:flex-start}
 
 .services{display:flex;flex-direction:column;gap:10px}
@@ -138,7 +141,19 @@ footer{font-size:.85rem;color:var(--muted);display:flex;flex-direction:column;ga
       <div class="bar" aria-hidden="true"><i></i><i></i><i></i></div>
     </div>
 
-    <section class="step" id="step-1">
+    <section class="step" id="step-0">
+      <h1 tabindex="-1" data-i18n="introTitle"></h1>
+      <p class="hint" data-i18n="intro1"></p>
+      <p class="hint" data-i18n="intro2"></p>
+      <ul class="does">
+        <li data-i18n="does1"></li>
+        <li data-i18n="does2"></li>
+        <li data-i18n="does3"></li>
+      </ul>
+      <p class="muted small" data-i18n="introTime"></p>
+    </section>
+
+    <section class="step" id="step-1" hidden>
       <h1 tabindex="-1" data-i18n="s1Title"></h1>
       <p class="hint" data-i18n="s1Hint"></p>
       <div class="services" id="services"></div>
@@ -226,6 +241,11 @@ de:{
  shareText:"Hilfe bei Anträgen für die Ausländerbehörde, auf Deutsch und Albanisch:",
  lImpressum:"Impressum", lDatenschutz:"Datenschutz", lWiderruf:"Widerrufsrecht", legalBack:"Zurück zum Antrag",
  draft:"Entwurf. Diese Angaben sind noch nicht vollständig und noch nicht gültig.", legalLang:"",
+ introTitle:"Papierkram mit der Ausländerbehörde? Wir helfen.",
+ intro1:"Jeder kennt es: Der Aufenthaltstitel läuft bald ab, oder Sie wechseln den Arbeitgeber. Dann kommen Formulare, Unterlagen und viel Bürokratie.",
+ intro2:"Genau da kommen wir ins Spiel. Wir sprechen Deutsch und Albanisch und helfen Ihnen Schritt für Schritt.",
+ does1:"Wir füllen Anträge mit Ihnen aus", does2:"Wir übersetzen Briefe und Formulare", does3:"Wir begleiten Sie zum Termin",
+ introTime:"Die Anfrage dauert etwa 2 Minuten.", start:"Jetzt starten",
  s1Title:"Was brauchen Sie?", s1Hint:"Tippen Sie auf alles, was Sie brauchen.",
  priceReq:"Preis auf Anfrage",
  s2Title:"Wie erreichen wir Sie?", name:"Ihr Name", phone:"Ihre Telefonnummer", addr:"Ihre Adresse (Straße, Hausnummer, PLZ, Ort)", sumAddr:"Adresse",
@@ -257,6 +277,11 @@ sq:{
  shareText:"Ndihmë për aplikime në zyrën për të huaj, në gjermanisht dhe shqip:",
  lImpressum:"Impressum", lDatenschutz:"Mbrojtja e të dhënave", lWiderruf:"E drejta e tërheqjes", legalBack:"Kthehu te aplikimi",
  draft:"Draft. Këto të dhëna ende nuk janë të plota dhe ende nuk janë të vlefshme.", legalLang:"Teksti ligjor është vetëm në gjermanisht.",
+ introTitle:"Letra me zyrën për të huaj? Ne ju ndihmojmë.",
+ intro1:"Të gjithë e dinë: Leja e qëndrimit skadon së shpejti, ose ndërroni punëdhënësin. Pastaj vijnë formularët, dokumentet dhe shumë burokraci.",
+ intro2:"Pikërisht këtu hyjmë ne. Flasim gjermanisht dhe shqip dhe ju ndihmojmë hap pas hapi.",
+ does1:"Plotësojmë aplikimet bashkë me ju", does2:"Përkthejmë letra dhe formularë", does3:"Ju shoqërojmë në termin",
+ introTime:"Kërkesa zgjat rreth 2 minuta.", start:"Fillo tani",
  s1Title:"Çfarë ju duhet?", s1Hint:"Prekni gjithçka që ju duhet.",
  priceReq:"Çmimi sipas kërkesës",
  s2Title:"Si t'ju kontaktojmë?", name:"Emri juaj", phone:"Numri juaj i telefonit", addr:"Adresa juaj (rruga, numri, kodi postar, qyteti)", sumAddr:"Adresa",
@@ -344,7 +369,7 @@ const SERVICES = [
 ];
 
 
-let legal = "", lang = "de", step = 1, selected = [], escort = false, busy = false;
+let legal = "", lang = "de", step = 0, selected = [], escort = false, busy = false;
 const files = {};
 const $ = id => document.getElementById(id);
 const t = k => T[lang][k];
@@ -490,15 +515,15 @@ function render(){
   document.querySelector("main").hidden = !!legal; $("legal").hidden = !legal;
   $("wa").href = "https://wa.me/?text=" + encodeURIComponent(t("shareText") + " " + SITE_URL);
   if (legal){ renderLegal(); return; }
-  ["1","2","4","done"].forEach(s => { $("step-" + s).hidden = String(step) !== s; });
+  ["0","1","2","4","done"].forEach(s => { $("step-" + s).hidden = String(step) !== s; });
   const done = step === "done";
-  $("prog").hidden = done; $("nav").hidden = done;
+  $("prog").hidden = done || step === 0; $("nav").hidden = done;
   if (!done){
     const shown = step === 4 ? 3 : step;
     $("prog-text").textContent = t("step") + " " + shown + " " + t("of") + " 3";
     document.querySelectorAll(".bar i").forEach((el, i) => el.classList.toggle("on", i < shown));
-    $("back").hidden = step === 1;
-    $("next").textContent = busy ? t("sending") : (step === 4 ? t("send") : t("next"));
+    $("back").hidden = step <= 1;
+    $("next").textContent = busy ? t("sending") : (step === 4 ? t("send") : step === 0 ? t("start") : t("next"));
     $("next").disabled = busy;
   }
   if (step === 1) renderServices();
