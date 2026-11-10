@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bashkë Antragshilfe</title>
+<style>
+/* Layout: one question per screen, like a counter clerk asking one thing at a time. Big tap targets, one primary button. */
+:root{
+  --bg:#e9eef0; --surface:#fbfcfc; --sunk:#dfe6e9; --ink:#12272e; --muted:#536a72;
+  --line:#c3cfd4; --brand:#0e5a63; --brand-ink:#ffffff; --mark:#ffd84a; --mark-ink:#2b2400;
+  --ok:#1c7a4a; --ok-bg:#dcefe4; --miss:#a2461d; --miss-bg:#f6e3d8;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1719; --surface:#152327; --sunk:#0a1214; --ink:#e6eeef; --muted:#93a8ae;
+  --line:#2b3f45; --brand:#58c2cc; --brand-ink:#04262a; --mark:#ffd84a; --mark-ink:#2b2400;
+  --ok:#6fd39d; --ok-bg:#143326; --miss:#f0a47f; --miss-bg:#3a2015; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1719; --surface:#152327; --sunk:#0a1214; --ink:#e6eeef; --muted:#93a8ae;
+  --line:#2b3f45; --brand:#58c2cc; --brand-ink:#04262a; --mark:#ffd84a; --mark-ink:#2b2400;
+  --ok:#6fd39d; --ok-bg:#143326; --miss:#f0a47f; --miss-bg:#3a2015; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:400 18px/1.5 var(--body)}
+.wrap{max-width:680px;margin:0 auto;padding-block:16px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:20px}
+h1,h2{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15;letter-spacing:-.01em}
+h1{font-size:clamp(1.6rem,6vw,2.1rem);font-weight:700}
+p{margin:0}
+.muted{color:var(--muted)}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font:700 1.2rem var(--display)}
+.brand span{background:var(--mark);color:var(--mark-ink);padding:0 .3em;border-radius:3px}
+.lang{display:flex;border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.lang button{font:600 1rem var(--body);padding:9px 18px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+.card{background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:22px 18px;display:flex;flex-direction:column;gap:20px}
+.prog{display:flex;flex-direction:column;gap:8px}
+.prog p{font-weight:600;font-size:.95rem;color:var(--muted)}
+.bar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.bar i{height:8px;border-radius:4px;background:var(--line)}
+.bar i.on{background:var(--brand)}
+.step{display:flex;flex-direction:column;gap:16px}
+.step h1:focus{outline:none}
+.hint{font-size:1.05rem}
+.deal{background:var(--mark);color:var(--mark-ink);font-weight:600;padding:8px 12px;border-radius:8px;align-self:flex-start}
+
+.services{display:flex;flex-direction:column;gap:10px}
+.svc{font:inherit;color:inherit;text-align:left;background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:14px;min-height:64px;cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center}
+.svc .tick{width:30px;height:30px;border:2px solid var(--muted);border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:1.2rem;color:transparent;background:var(--surface)}
+.svc .txt{display:flex;flex-direction:column;min-width:0}
+.svc b{font:700 1.08rem var(--display)}
+.svc small{color:var(--muted);font-size:.92rem;line-height:1.35}
+.svc .price{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.svc[aria-pressed="true"]{border-color:var(--ok);background:var(--ok-bg)}
+.svc[aria-pressed="true"] .tick{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.field label,.q{font-weight:600;font-size:1.05rem}
+input[type=text],input[type=tel],textarea{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:14px;width:100%}
+input[aria-invalid="true"]{border-color:var(--miss);background:var(--miss-bg)}
+textarea{min-height:90px;resize:vertical}
+.yn{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.yn button{font:700 1.05rem var(--display);min-height:60px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);cursor:pointer;padding:8px}
+.yn button[aria-pressed="true"]{border-color:var(--ok);background:var(--ok-bg)}
+.box{border:2px dashed var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+
+.slots{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.slot{border:2px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.slot.has{border-color:var(--ok);background:var(--ok-bg)}
+.slot-name{font-weight:600}
+.state{font-weight:700;font-size:.95rem;color:var(--miss)}
+.slot.has .state{color:var(--ok)}
+.pick{position:relative;display:flex}
+.pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.pick span{flex:1;text-align:center;font:700 1.05rem var(--display);border:2px solid var(--ink);border-radius:12px;padding:14px;background:var(--surface)}
+.pick input:focus-visible + span{outline:3px solid var(--brand);outline-offset:2px}
+.files{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.files li{display:flex;gap:8px;align-items:center;font-size:.95rem;background:var(--surface);border-radius:8px;padding:6px 6px 6px 12px}
+.files .fn{flex:1;min-width:0;overflow-wrap:anywhere}
+.files button{font:600 .95rem var(--body);border:0;background:transparent;color:var(--miss);cursor:pointer;padding:8px}
+
+.sum{margin:0;display:flex;flex-direction:column;gap:10px}
+.sum div{display:flex;flex-direction:column;border-bottom:1px solid var(--line);padding-bottom:10px}
+.sum dt{font-size:.9rem;color:var(--muted);font-weight:600}
+.sum dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.sum .total dd{font:700 1.5rem var(--display);font-variant-numeric:tabular-nums}
+.consent{display:flex;gap:12px;align-items:flex-start;border:2px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}
+.consent.bad{border-color:var(--miss);background:var(--miss-bg)}
+.consent input{width:28px;height:28px;flex:none;accent-color:var(--brand)}
+
+.err{background:var(--miss-bg);color:var(--miss);font-weight:700;padding:12px 14px;border-radius:10px}
+.nav{display:flex;gap:10px}
+.btn{font:700 1.15rem var(--display);min-height:60px;border-radius:12px;cursor:pointer;padding:10px 20px;border:2px solid var(--ink);background:transparent;color:var(--ink)}
+.btn.main{flex:1;background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn:disabled{opacity:.6;cursor:default}
+.done{text-align:center;align-items:center}
+.bigtick{width:72px;height:72px;border-radius:50%;background:var(--ok);color:var(--surface);display:grid;place-items:center;font-size:2.4rem;font-weight:700}
+.ref{font:700 1.4rem var(--display);font-variant-numeric:tabular-nums}
+.missing{text-align:left;align-self:stretch;background:var(--sunk);color:var(--ink);border-radius:10px;padding:12px 14px}
+.missing ul{margin:6px 0 0;padding-left:22px}
+.small{font-size:.9rem}
+.share{align-self:stretch;border-top:2px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.share a.btn{display:grid;place-items:center;text-decoration:none}
+.legal h1{font-size:1.6rem}
+.legal h2{font:700 1.15rem var(--display);margin:0}
+#legal-body{display:flex;flex-direction:column;gap:12px}
+#legal-body p{white-space:pre-line;overflow-wrap:anywhere}
+.legal .btn{align-self:flex-start}
+.links{display:flex;flex-wrap:wrap;gap:4px 18px}
+.links button{font:600 .95rem var(--body);color:var(--brand);background:none;border:0;padding:8px 0;cursor:pointer;text-decoration:underline}
+footer{font-size:.85rem;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span>Bashkë</span> Antragshilfe</div>
+    <div class="lang" role="group" aria-label="Sprache / Gjuha">
+      <button type="button" id="lang-de" data-lang="de">Deutsch</button>
+      <button type="button" id="lang-sq" data-lang="sq">Shqip</button>
+    </div>
+  </header>
+
+  <main class="card">
+    <div class="prog" id="prog">
+      <p id="prog-text"></p>
+      <div class="bar" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+
+    <section class="step" id="step-1">
+      <h1 tabindex="-1" data-i18n="s1Title"></h1>
+      <p class="hint" data-i18n="s1Hint"></p>
+      <div class="services" id="services"></div>
+      <p class="muted small" data-i18n="s1Note"></p>
+    </section>
+
+    <section class="step" id="step-2" hidden>
+      <h1 tabindex="-1" data-i18n="s2Title"></h1>
+      <div class="field"><label for="f-name" data-i18n="name"></label><input type="text" id="f-name" autocomplete="name"></div>
+      <div class="field"><label for="f-phone" data-i18n="phone"></label><input type="tel" id="f-phone" autocomplete="tel" inputmode="tel"></div>
+      <div class="field"><label for="f-addr" data-i18n="addr"></label><input type="text" id="f-addr" autocomplete="street-address"></div>
+      <div class="box" id="escort-box">
+        <p class="q" data-i18n="escortQ"></p>
+        <div class="yn">
+          <button type="button" id="escort-no" data-i18n="escortNo"></button>
+          <button type="button" id="escort-yes" data-i18n="escortYes"></button>
+        </div>
+      </div>
+      <div class="field"><label for="f-msg" data-i18n="msg"></label><textarea id="f-msg"></textarea></div>
+    </section>
+
+    <section class="step" id="step-4" hidden>
+      <h1 tabindex="-1" data-i18n="s4Title"></h1>
+      <dl class="sum" id="sum"></dl>
+      <label class="consent" id="consent-box"><input type="checkbox" id="f-consent"><span data-i18n="consent"></span></label>
+      <label class="consent" id="start-box"><input type="checkbox" id="f-start"><span data-i18n="startNow"></span></label>
+      <p class="muted small" data-i18n="s4Note"></p>
+    </section>
+
+    <section class="step done" id="step-done" hidden>
+      <div class="bigtick" aria-hidden="true">✓</div>
+      <h1 tabindex="-1" data-i18n="doneTitle"></h1>
+      <p class="hint" data-i18n="doneText"></p>
+      <p><span data-i18n="refLabel"></span> <span class="ref" id="ref"></span></p>
+      <div class="missing" id="missing" hidden></div>
+      <div class="share">
+        <p class="q" data-i18n="shareQ"></p>
+        <a class="btn main" id="wa" target="_blank" rel="noopener" data-i18n="shareWa"></a>
+        <button class="btn" type="button" id="copy" data-i18n="shareCopy"></button>
+        <p class="muted small" id="copy-url" hidden></p>
+      </div>
+    </section>
+
+    <p class="err" id="err" role="alert" hidden></p>
+    <div class="nav" id="nav">
+      <button class="btn" type="button" id="back" data-i18n="back"></button>
+      <button class="btn main" type="button" id="next"></button>
+    </div>
+  </main>
+
+  <section class="card legal" id="legal" hidden>
+    <button class="btn" type="button" id="legal-back" data-i18n="legalBack"></button>
+    <p class="err" id="draft" data-i18n="draft"></p>
+    <p class="muted small" id="legal-lang" data-i18n="legalLang"></p>
+    <div id="legal-body"></div>
+  </section>
+
+  <footer>
+    <p data-i18n="notice"></p>
+    <nav class="links">
+      <button type="button" data-legal="impressum" data-i18n="lImpressum"></button>
+      <button type="button" data-legal="datenschutz" data-i18n="lDatenschutz"></button>
+      <button type="button" data-legal="widerruf" data-i18n="lWiderruf"></button>
+    </nav>
+  </footer>
+</div>
+
+<script>
+/* ---- Einstellung: Adresse des Empfangs-Skripts. Leer = Vorschau, es wird nichts übertragen. ---- */
+const UPLOAD_ENDPOINT = "https://script.google.com/macros/s/AKfycbwwSUPV2ZeDTQMJT1CoklNLqnbvFDCH92Qnx2LyXf7JAb9w4mmgEkaBf3RPmppqw1KDLw/exec";
+/* ---- Deine Angaben für Impressum und Datenschutz. Solange etwas leer ist, steht auf den Rechtsseiten "Entwurf". ---- */
+const OWNER = { name: "", street: "", city: "", email: "", phone: "", host: "", deleteDays: 30 };
+const SITE_URL = "https://zcrystxlz.github.io/bashke/";
+const MAX_MB = 15, TOTAL_MB = 25, ESCORT_PRICE = 79;
+function toB64(f){ return new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(f); }); }
+
+const T = {
+de:{
+ step:"Schritt", of:"von", next:"Weiter", back:"Zurück", send:"Jetzt senden", sending:"Wird gesendet …",
+ s1Note:"Sie entscheiden selbst, welchen Antrag Sie stellen. Wir helfen beim Ausfüllen, Übersetzen und Begleiten.",
+ startNow:"Ich möchte, dass Sie sofort mit der Arbeit beginnen. Ich weiß: Wenn die Arbeit vollständig erledigt ist, kann ich nicht mehr widerrufen.",
+ s4Note:"Ihre Anfrage ist noch unverbindlich. Der Auftrag beginnt erst, wenn wir ihn bestätigen.",
+ errStart:"Bitte setzen Sie beide Häkchen, bevor Sie senden.",
+ shareQ:"Kennen Sie jemanden, der auch Hilfe braucht? Schicken Sie ihm diese Seite.", shareWa:"Per WhatsApp schicken", shareCopy:"Link kopieren", copied:"Link kopiert",
+ shareText:"Hilfe bei Anträgen für die Ausländerbehörde, auf Deutsch und Albanisch:",
+ lImpressum:"Impressum", lDatenschutz:"Datenschutz", lWiderruf:"Widerrufsrecht", legalBack:"Zurück zum Antrag",
+ draft:"Entwurf. Diese Angaben sind noch nicht vollständig und noch nicht gültig.", legalLang:"",
+ s1Title:"Was brauchen Sie?", s1Hint:"Tippen Sie auf alles, was Sie brauchen.",
+ priceReq:"Preis auf Anfrage",
+ s2Title:"Wie erreichen wir Sie?", name:"Ihr Name", phone:"Ihre Telefonnummer", addr:"Ihre Adresse (Straße, Hausnummer, PLZ, Ort)", sumAddr:"Adresse",
+ escortQ:"Soll jemand mit zum Termin kommen und übersetzen?", escortNo:"Nein", escortYes:"Ja",
+ msg:"Möchten Sie uns noch etwas sagen? (freiwillig)",
+ s3Title:"Fotos von Ihren Dokumenten", s3Hint:"Machen Sie von jedem Dokument ein Foto. Fehlt etwas? Kein Problem, Sie können es später schicken.",
+ pick:"Foto hinzufügen", add:"Noch ein Foto hinzufügen", missing:"Fehlt noch", has1:"✓ 1 Datei", hasN:"✓ {n} Dateien", remove:"Entfernen",
+ tooBig:"ist zu groß (mehr als "+MAX_MB+" MB). Bitte ein kleineres Foto nehmen.",
+ s4Title:"Stimmt alles?", sumNeed:"Sie brauchen", sumEscort:"Begleitung zum Termin", yes:"Ja", no:"Nein",
+ sumName:"Name", sumPhone:"Telefon", sumDocs:"Dokumente", files1:"1 Datei", filesN:"{n} Dateien", total:"Preis",
+ consent:"Ich habe die Datenschutzerklärung gelesen. Ich bin einverstanden, dass meine Angaben für meine Anfrage gespeichert und danach gelöscht werden.",
+ errSvc:"Bitte tippen Sie zuerst auf das, was Sie brauchen.",
+ errContact:"Bitte Name, Telefonnummer und Adresse eintragen.",
+ errConsent:"Bitte setzen Sie das Häkchen, bevor Sie senden.",
+ errTotal:"Die Fotos sind zusammen zu groß (mehr als 25 MB). Bitte einige entfernen.",
+ errSend:"Das Senden hat nicht geklappt. Bitte Internet prüfen und noch einmal auf „Jetzt senden“ tippen.",
+ doneTitle:"Fertig. Wir haben Ihre Anfrage bekommen.", doneText:"Wir melden uns umgehend persönlich bei Ihnen.", refLabel:"Ihre Nummer:",
+ pvTitle:"Vorschau: Es wurde nichts gesendet.", stillMissing:"Bitte halten Sie diese Unterlagen bereit:",
+ notice:"Private Unterstützung beim Ausfüllen und Übersetzen. Wir sind keine Behörde und keine Anwaltskanzlei und bieten keine Rechtsberatung. Welche Unterlagen genau verlangt werden, entscheidet die zuständige Behörde.",
+ foot1:"Impressum und Datenschutzerklärung: [hier eintragen, bevor die Seite online geht]"
+},
+sq:{
+ step:"Hapi", of:"nga", next:"Vazhdo", back:"Kthehu", send:"Dërgo tani", sending:"Duke dërguar …",
+ s1Note:"Ju vendosni vetë se cilin aplikim bëni. Ne ndihmojmë me plotësimin, përkthimin dhe shoqërimin.",
+ startNow:"Dëshiroj që të filloni menjëherë me punën. E di: kur puna të ketë përfunduar plotësisht, nuk mund të tërhiqem më.",
+ s4Note:"Kërkesa juaj ende nuk është detyruese. Porosia fillon vetëm kur ne e konfirmojmë.",
+ errStart:"Ju lutem vendosni të dyja shenjat para se të dërgoni.",
+ shareQ:"A njihni dikë që ka nevojë për ndihmë? Dërgojani këtë faqe.", shareWa:"Dërgo me WhatsApp", shareCopy:"Kopjo linkun", copied:"Linku u kopjua",
+ shareText:"Ndihmë për aplikime në zyrën për të huaj, në gjermanisht dhe shqip:",
+ lImpressum:"Impressum", lDatenschutz:"Mbrojtja e të dhënave", lWiderruf:"E drejta e tërheqjes", legalBack:"Kthehu te aplikimi",
+ draft:"Draft. Këto të dhëna ende nuk janë të plota dhe ende nuk janë të vlefshme.", legalLang:"Teksti ligjor është vetëm në gjermanisht.",
+ s1Title:"Çfarë ju duhet?", s1Hint:"Prekni gjithçka që ju duhet.",
+ priceReq:"Çmimi sipas kërkesës",
+ s2Title:"Si t'ju kontaktojmë?", name:"Emri juaj", phone:"Numri juaj i telefonit", addr:"Adresa juaj (rruga, numri, kodi postar, qyteti)", sumAddr:"Adresa",
+ escortQ:"A doni që dikush të vijë me ju në termin dhe të përkthejë?", escortNo:"Jo", escortYes:"Po",
+ msg:"Doni të na thoni edhe diçka? (nuk është e detyrueshme)",
+ s3Title:"Foto të dokumenteve tuaja", s3Hint:"Bëni një foto të çdo dokumenti. Mungon diçka? S'ka problem, mund ta dërgoni më vonë.",
+ pick:"Shto foto", add:"Shto edhe një foto", missing:"Ende mungon", has1:"✓ 1 skedar", hasN:"✓ {n} skedarë", remove:"Hiq",
+ tooBig:"është shumë i madh (më shumë se "+MAX_MB+" MB). Ju lutem përdorni një foto më të vogël.",
+ s4Title:"A është gjithçka në rregull?", sumNeed:"Ju duhet", sumEscort:"Shoqërim në termin", yes:"Po", no:"Jo",
+ sumName:"Emri", sumPhone:"Telefoni", sumDocs:"Dokumentet", files1:"1 skedar", filesN:"{n} skedarë", total:"Çmimi",
+ consent:"E kam lexuar deklaratën për mbrojtjen e të dhënave. Pajtohem që të dhënat e mia të ruhen për kërkesën time dhe pastaj të fshihen.",
+ errSvc:"Ju lutem prekni së pari atë që ju duhet.",
+ errContact:"Ju lutem shkruani emrin, numrin e telefonit dhe adresën.",
+ errConsent:"Ju lutem vendosni shenjën para se të dërgoni.",
+ errTotal:"Fotot së bashku janë shumë të mëdha (më shumë se 25 MB). Ju lutem hiqni disa.",
+ errSend:"Dërgimi nuk funksionoi. Kontrolloni internetin dhe prekni përsëri „Dërgo tani“.",
+ doneTitle:"U krye. E morëm kërkesën tuaj.", doneText:"Do t'ju kontaktojmë personalisht sa më shpejt.", refLabel:"Numri juaj:",
+ pvTitle:"Parapamje: Asgjë nuk u dërgua.", stillMissing:"Ju lutem përgatitni këto dokumente:",
+ notice:"Ndihmë private për plotësim dhe përkthim. Nuk jemi zyrë shtetërore as zyrë avokatie dhe nuk japim këshilla juridike. Se cilat dokumente kërkohen saktësisht, e vendos zyra përgjegjëse.",
+ foot1:"Impressum dhe mbrojtja e të dhënave: [për t'u plotësuar para se faqja të dalë online]"
+}};
+
+const DOCS = {
+ pass:{de:"Reisepass (alle beschriebenen Seiten)",sq:"Pasaporta (të gjitha faqet e përdorura)"},
+ passvisum:{de:"Reisepass mit Visum und Einreisestempel",sq:"Pasaporta me vizë dhe vulën e hyrjes"},
+ eat:{de:"Aktueller Aufenthaltstitel (Vorder- und Rückseite)",sq:"Leja aktuale e qëndrimit (para dhe mbrapa)"},
+ foto:{de:"Biometrisches Passfoto",sq:"Fotografi biometrike"},
+ melde:{de:"Meldebescheinigung",sq:"Vërtetimi i adresës (Meldebescheinigung)"},
+ miete:{de:"Mietvertrag mit Wohnungsgröße",sq:"Kontrata e qirasë me sipërfaqen e banesës"},
+ arbeit:{de:"Arbeitsvertrag",sq:"Kontrata e punës"},
+ lohn:{de:"Letzte 3 Gehaltsabrechnungen",sq:"3 fletëpagesat e fundit (Gehaltsabrechnung)"},
+ kv:{de:"Nachweis der Krankenversicherung",sq:"Vërtetimi i sigurimit shëndetësor"},
+ heirat:{de:"Heiratsurkunde (mit Übersetzung)",sq:"Certifikata e martesës (me përkthim)"},
+ geburt:{de:"Geburtsurkunde (mit Übersetzung)",sq:"Certifikata e lindjes (me përkthim)"},
+ sprache:{de:"Sprachzertifikat Deutsch",sq:"Certifikata e gjuhës gjermane"},
+ rente:{de:"Rentenversicherungsverlauf",sq:"Pasqyra e sigurimit pensional (Rentenversicherungsverlauf)"},
+ test:{de:"Einbürgerungstest oder „Leben in Deutschland“",sq:"Testi i shtetësisë ose „Leben in Deutschland“"},
+ partner:{de:"Pass/Ausweis und Aufenthaltstitel des Ehepartners in Deutschland",sq:"Pasaporta ose letërnjoftimi dhe leja e qëndrimit e bashkëshortit/es në Gjermani"},
+ gast:{de:"Passkopie des Gastes",sq:"Kopja e pasaportës së mysafirit"},
+ ausweis:{de:"Eigener Ausweis oder Pass mit Aufenthaltstitel",sq:"Letërnjoftimi ose pasaporta juaj me leje qëndrimi"},
+ neupass:{de:"Neuer Reisepass",sq:"Pasaporta e re"},
+ altpass:{de:"Alter Reisepass",sq:"Pasaporta e vjetër"},
+ stelle:{de:"„Erklärung zum Beschäftigungsverhältnis“ vom neuen Arbeitgeber",sq:"Formulari „Erklärung zum Beschäftigungsverhältnis“ nga punëdhënësi i ri"},
+ kuend:{de:"Kündigung des alten Arbeitgebers (falls vorhanden)",sq:"Largimi nga puna e vjetër (nëse ka)"},
+ brief:{de:"Brief oder E-Mail der Behörde (falls vorhanden)",sq:"Letra ose e-maili i zyrës (nëse ka)"},
+ termin:{de:"Terminbestätigung",sq:"Konfirmimi i terminit"},
+ sonst:{de:"Weitere Dokumente",sq:"Dokumente të tjera"}
+};
+
+
+const SERVICES = [
+ {id:"verl",docs:["pass","eat","foto","melde","miete","arbeit","lohn","kv"],
+  de:["Aufenthaltstitel verlängern","Die Aufenthaltserlaubnis läuft bald ab."],
+  sq:["Vazhdimi i lejes së qëndrimit","Leja e qëndrimit skadon së shpejti."]},
+ {id:"erst",docs:["passvisum","foto","melde","miete","arbeit","kv"],
+  de:["Erste Aufenthaltserlaubnis","Nach der Einreise mit Visum."],
+  sq:["Leja e parë e qëndrimit","Pas hyrjes në Gjermani me vizë."]},
+ {id:"nieder",docs:["pass","eat","foto","miete","arbeit","lohn","rente","sprache","kv"],
+  de:["Niederlassungserlaubnis","Unbefristeter Aufenthalt."],
+  sq:["Leje qëndrimi e përhershme","Niederlassungserlaubnis, pa afat."]},
+ {id:"fam",docs:["pass","partner","heirat","geburt","miete","lohn","sprache","kv"],
+  de:["Familiennachzug","Ehepartner oder Kinder nachholen."],
+  sq:["Bashkim familjar","Për bashkëshortin/en ose fëmijët."]},
+ {id:"ueber",docs:["neupass","altpass","eat","foto"],
+  de:["Neuer Pass, Aufenthaltstitel übertragen","Der Titel muss in den neuen Pass."],
+  sq:["Pasaportë e re, bartja e lejes","Leja duhet të kalojë në pasaportën e re."]},
+ {id:"fiktion",docs:["pass","eat","melde","brief"],
+  de:["Fiktionsbescheinigung","Der Titel läuft ab, der Termin kommt später."],
+  sq:["Vërtetim i përkohshëm (Fiktionsbescheinigung)","Leja skadon, por termini është më vonë."]},
+ {id:"vpe",docs:["ausweis","gast","arbeit","lohn","miete"],
+  de:["Verpflichtungserklärung","Einladung für Besuch aus dem Ausland."],
+  sq:["Deklaratë garancie (Verpflichtungserklärung)","Ftesë për vizitë nga jashtë."]},
+ {id:"job",docs:["pass","eat","arbeit","stelle","kuend"],
+  de:["Arbeitgeberwechsel","Neue Stelle der Behörde melden oder erlauben lassen."],
+  sq:["Ndërrimi i punëdhënësit","Lajmërimi ose leja për vendin e ri të punës."]},
+ {id:"einb",docs:["pass","eat","geburt","sprache","test","rente","lohn","miete"],
+  de:["Einbürgerung","Antrag auf die deutsche Staatsangehörigkeit."],
+  sq:["Shtetësia gjermane (Einbürgerung)","Aplikimi për shtetësinë gjermane."]},
+ {id:"begl",escort:true,docs:["termin","brief","pass","eat"],
+  de:["Begleitung zum Termin","Wir begleiten Sie und übersetzen vor Ort."],
+  sq:["Shoqërim në termin","Ju shoqërojmë dhe përkthejmë në vend."]},
+ {id:"sonst",docs:["brief"],
+  de:["Anderes Anliegen","Kontaktformular, Rückfrage oder etwas anderes."],
+  sq:["Kërkesë tjetër","Formular kontakti, pyetje ose diçka tjetër."]}
+];
+
+
+let legal = "", lang = "de", step = 1, selected = [], escort = false, busy = false;
+const files = {};
+const $ = id => document.getElementById(id);
+const t = k => T[lang][k];
+const cnt = (n, one, many) => n === 1 ? t(one) : t(many).replace("{n}", n);
+
+try { const s = localStorage.getItem("bashke-lang"); if (s === "de" || s === "sq") lang = s; else if ((navigator.language||"").toLowerCase().startsWith("sq")) lang = "sq"; } catch(e){}
+
+function isApp(s){ return !s.escort && s.id !== "sonst"; }
+function basePrice(s){ return s.escort ? ESCORT_PRICE : !isApp(s) ? null : (selected.filter(isApp).length >= 2 ? 25 : 39); }
+function hasEscortSvc(){ return selected.some(s => s.escort); }
+function escortBooked(){ return hasEscortSvc() || escort; }
+function ordered(){ return SERVICES.filter(s => selected.includes(s)); }
+function curDocs(){ const out = []; ordered().forEach(s => s.docs.forEach(k => { if (k !== "sonst" && !out.includes(k)) out.push(k); })); return out; }
+function slotKeys(){ return curDocs().concat("sonst"); }
+function fileCount(){ return slotKeys().reduce((n, k) => n + (files[k] || []).length, 0); }
+function priceText(){
+  let sum = 0, open = false;
+  selected.forEach(s => { const b = basePrice(s); if (b === null) open = true; else sum += b; });
+  if (!hasEscortSvc() && escort) sum += ESCORT_PRICE;
+  if (!sum) return t("priceReq");
+  return sum + " €" + (open ? " + " + t("priceReq") : "");
+}
+function showErr(msg){ const e = $("err"); e.textContent = msg || ""; e.hidden = !msg; if (msg) e.scrollIntoView({block:"nearest"}); }
+
+function renderStatic(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  $("lang-de").setAttribute("aria-pressed", lang === "de");
+  $("lang-sq").setAttribute("aria-pressed", lang === "sq");
+}
+
+function renderServices(){
+  const box = $("services"); box.textContent = "";
+  SERVICES.forEach(s => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "svc"; b.id = "svc-" + s.id;
+    b.setAttribute("aria-pressed", selected.includes(s));
+    const tick = document.createElement("span"); tick.className = "tick"; tick.textContent = "✓"; tick.setAttribute("aria-hidden", "true");
+    const txt = document.createElement("span"); txt.className = "txt";
+    const n = document.createElement("b"); n.textContent = s[lang][0];
+    const d = document.createElement("small"); d.textContent = s[lang][1];
+    txt.append(n, d);
+    b.append(tick, txt);
+    b.addEventListener("click", () => {
+      selected = selected.includes(s) ? selected.filter(x => x !== s) : selected.concat(s);
+      showErr(""); renderServices(); $("svc-" + s.id).focus();
+    });
+    box.append(b);
+  });
+}
+
+function renderEscort(){
+  $("escort-box").hidden = hasEscortSvc();
+  $("escort-no").setAttribute("aria-pressed", !escort);
+  $("escort-yes").setAttribute("aria-pressed", escort);
+}
+
+function renderSlots(){
+  const ul = $("slots"); ul.textContent = "";
+  slotKeys().forEach(key => {
+    const list = files[key] || [];
+    const li = document.createElement("li"); li.className = "slot" + (list.length ? " has" : "");
+    const name = document.createElement("div"); name.className = "slot-name"; name.textContent = DOCS[key][lang];
+    li.append(name);
+    if (key !== "sonst" || list.length){
+      const st = document.createElement("div"); st.className = "state";
+      st.textContent = list.length ? cnt(list.length, "has1", "hasN") : t("missing");
+      li.append(st);
+    }
+    if (list.length){
+      const fl = document.createElement("ul"); fl.className = "files";
+      list.forEach((f, i) => {
+        const r = document.createElement("li");
+        const fn = document.createElement("span"); fn.className = "fn"; fn.textContent = f.name;
+        const rm = document.createElement("button"); rm.type = "button"; rm.textContent = t("remove");
+        rm.addEventListener("click", () => { files[key].splice(i, 1); renderSlots(); });
+        r.append(fn, rm); fl.append(r);
+      });
+      li.append(fl);
+    }
+    const pick = document.createElement("label"); pick.className = "pick";
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.multiple = true; inp.accept = "image/*,application/pdf"; inp.id = "file-" + key;
+    inp.setAttribute("aria-label", DOCS[key][lang] + ": " + t("pick"));
+    inp.addEventListener("change", () => {
+      showErr(""); files[key] = files[key] || [];
+      Array.from(inp.files).forEach(f => { if (f.size > MAX_MB * 1048576) showErr(f.name + " " + t("tooBig")); else files[key].push(f); });
+      renderSlots();
+    });
+    const sp = document.createElement("span"); sp.textContent = list.length ? t("add") : t("pick");
+    pick.append(inp, sp); li.append(pick);
+    ul.append(li);
+  });
+}
+
+function renderSum(){
+  const dl = $("sum"); dl.textContent = "";
+  const row = (k, v, cls) => { const d = document.createElement("div"); if (cls) d.className = cls;
+    const dt = document.createElement("dt"); dt.textContent = k; const dd = document.createElement("dd"); dd.textContent = v; d.append(dt, dd); dl.append(d); };
+  row(t("sumNeed"), ordered().map(s => s[lang][0]).join(", "));
+  if (!hasEscortSvc()) row(t("sumEscort"), escort ? t("yes") : t("no"));
+  row(t("sumName"), $("f-name").value.trim());
+  row(t("sumPhone"), $("f-phone").value.trim());
+  row(t("sumAddr"), $("f-addr").value.trim());
+}
+
+function legalDoc(kind){
+  const o = k => OWNER[k] || "[noch eintragen]";
+  const who = o("name") + "\nBashkë Antragshilfe\n" + o("street") + "\n" + o("city");
+  const contact = "Telefon: " + o("phone") + "\nE-Mail: " + o("email");
+  if (kind === "impressum") return [
+    ["h1","Impressum"], ["p","Angaben gemäß § 5 DDG"], ["p", who],
+    ["h2","Kontakt"], ["p", contact],
+    ["h2","Was wir tun und was nicht"], ["p","Wir helfen beim Ausfüllen von Anträgen, übersetzen und begleiten zu Terminen. Wir sind keine Behörde und keine Anwaltskanzlei. Wir bieten keine Rechtsberatung und prüfen nicht, welcher Antrag im Einzelfall der richtige ist."],
+    ["h2","Verbraucherstreitbeilegung"], ["p","Wir nehmen nicht an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teil."]];
+  if (kind === "datenschutz") return [
+    ["h1","Datenschutzerklärung"],
+    ["h2","Wer ist verantwortlich?"], ["p", who + "\n" + contact],
+    ["h2","Welche Daten wir verarbeiten"], ["p","Name, Telefonnummer, Adresse, Ihr Anliegen und Ihre Nachricht. Über diese Website werden keine Dokumente hochgeladen."],
+    ["h2","Wofür wir die Daten nutzen"], ["p","Nur, um Ihre Anfrage zu bearbeiten: Anträge ausfüllen, übersetzen, Termine begleiten und Sie dazu kontaktieren. Wir nutzen die Daten nicht für Werbung."],
+    ["h2","Rechtsgrundlage"], ["p","Die Bearbeitung Ihrer Anfrage und unseres Auftrags (Art. 6 Abs. 1 lit. b DSGVO) und Ihre Einwilligung beim Absenden (Art. 6 Abs. 1 lit. a und, soweit besondere Daten enthalten sind, Art. 9 Abs. 2 lit. a DSGVO). Sie können die Einwilligung jederzeit widerrufen."],
+    ["h2","Wer die Daten bekommt"], ["p","Die Daten liegen bei unserem Hosting-Anbieter: " + o("host") + ". Er verarbeitet sie nur in unserem Auftrag. An Behörden geben wir Unterlagen nur weiter, wenn Sie das möchten. Sonst gibt es keine Weitergabe."],
+    ["h2","Wie lange wir speichern"], ["p","Ihre Angaben löschen wir spätestens " + OWNER.deleteDays + " Tage, nachdem Ihr Anliegen erledigt ist. Rechnungsdaten bewahren wir so lange auf, wie es das Gesetz verlangt."],
+    ["h2","Ihre Rechte"], ["p","Sie können Auskunft, Berichtigung, Löschung und Einschränkung verlangen, der Verarbeitung widersprechen und Ihre Daten mitnehmen. Schreiben Sie uns dazu einfach. Sie können sich außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren."],
+    ["h2","Diese Website"], ["p","Die Seite setzt keine Cookies zu Werbe- oder Analysezwecken. In Ihrem Browser wird nur die gewählte Sprache gespeichert."]];
+  return [
+    ["h1","Widerrufsrecht"],
+    ["p","Sie können Ihren Auftrag innerhalb von 14 Tagen ohne Angabe von Gründen widerrufen. Die Frist beginnt an dem Tag, an dem wir Ihren Auftrag bestätigen."],
+    ["h2","So widerrufen Sie"], ["p","Schreiben Sie uns eine klare Nachricht, zum Beispiel per E-Mail oder Brief, dass Sie den Auftrag widerrufen:\n" + who + "\n" + contact + "\nEs genügt, wenn Sie die Nachricht vor Ablauf der Frist absenden."],
+    ["h2","Folgen des Widerrufs"], ["p","Wir zahlen alles zurück, was Sie uns gezahlt haben, spätestens 14 Tage nach Ihrem Widerruf, auf demselben Weg, auf dem Sie gezahlt haben. Haben wir auf Ihren Wunsch schon vor Ablauf der Frist mit der Arbeit begonnen, zahlen Sie den Teil, den wir bis zum Widerruf schon geleistet haben."],
+    ["h2","Wann das Widerrufsrecht endet"], ["p","Das Widerrufsrecht erlischt, wenn wir die Leistung vollständig erbracht haben und Sie vorher ausdrücklich zugestimmt haben, dass wir sofort beginnen."],
+    ["h2","Muster-Widerrufsformular"], ["p","An: " + o("name") + ", " + o("street") + ", " + o("city") + ", " + o("email") + "\nHiermit widerrufe ich den von mir abgeschlossenen Vertrag über folgende Dienstleistung: ________\nBestellt am: ________\nName: ________\nAnschrift: ________\nDatum, Unterschrift (nur bei Brief): ________"]];
+}
+function renderLegal(){
+  const body = $("legal-body"); body.textContent = "";
+  legalDoc(legal).forEach(([tag, text]) => { const el = document.createElement(tag); el.textContent = text; body.append(el); });
+  $("draft").hidden = ["name","street","city","email","phone","host"].every(k => OWNER[k]);
+  $("legal-lang").hidden = lang === "de";
+}
+
+function render(){
+  renderStatic();
+  document.querySelector("main").hidden = !!legal; $("legal").hidden = !legal;
+  $("wa").href = "https://wa.me/?text=" + encodeURIComponent(t("shareText") + " " + SITE_URL);
+  if (legal){ renderLegal(); return; }
+  ["1","2","4","done"].forEach(s => { $("step-" + s).hidden = String(step) !== s; });
+  const done = step === "done";
+  $("prog").hidden = done; $("nav").hidden = done;
+  if (!done){
+    const shown = step === 4 ? 3 : step;
+    $("prog-text").textContent = t("step") + " " + shown + " " + t("of") + " 3";
+    document.querySelectorAll(".bar i").forEach((el, i) => el.classList.toggle("on", i < shown));
+    $("back").hidden = step === 1;
+    $("next").textContent = busy ? t("sending") : (step === 4 ? t("send") : t("next"));
+    $("next").disabled = busy;
+  }
+  if (step === 1) renderServices();
+  if (step === 2) renderEscort();
+  if (step === 4) renderSum();
+}
+
+function go(n){
+  step = n; showErr(""); render();
+  const h = document.querySelector("#step-" + n + " h1");
+  window.scrollTo(0, 0); if (h) h.focus({preventScroll: true});
+}
+
+function valid(){
+  if (step === 1 && !selected.length){ showErr(t("errSvc")); return false; }
+  if (step === 2){
+    const fs = [$("f-name"), $("f-phone"), $("f-addr")];
+    fs.forEach(f => f.setAttribute("aria-invalid", !f.value.trim()));
+    if (fs.some(f => !f.value.trim())){ showErr(t("errContact")); return false; }
+  }
+  if (step === 4){
+    const ok = $("f-consent").checked, ok2 = $("f-start").checked;
+    $("consent-box").classList.toggle("bad", !ok); $("start-box").classList.toggle("bad", !ok2);
+    if (!ok || !ok2){ showErr(t("errStart")); return false; }
+  }
+  return true;
+}
+
+function finish(ref, preview){
+  go("done");
+  $("ref").textContent = ref;
+  if (preview) document.querySelector("#step-done h1").textContent = t("pvTitle");
+  const miss = curDocs(), box = $("missing");
+  box.textContent = ""; box.hidden = !miss.length;
+  if (miss.length){
+    const p = document.createElement("strong"); p.textContent = t("stillMissing");
+    const ul = document.createElement("ul");
+    miss.forEach(k => { const li = document.createElement("li"); li.textContent = DOCS[k][lang]; ul.append(li); });
+    box.append(p, ul);
+  }
+}
+
+async function submit(){
+  const ref = "BK-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+  if (!UPLOAD_ENDPOINT){ finish(ref, true); return; }
+  const all = []; slotKeys().forEach(k => (files[k] || []).forEach(f => all.push([k, f])));
+  if (all.reduce((n, x) => n + x[1].size, 0) > TOTAL_MB * 1048576){ showErr(t("errTotal")); return; }
+  busy = true; render();
+  try {
+    const dateien = [];
+    for (const [k, f] of all) dateien.push({slot: DOCS[k].de, name: f.name, typ: f.type || "application/octet-stream", daten: await toB64(f)});
+    const payload = {referenz: ref, anliegen: ordered().map(x => x.de[0]).join("; "), sprache: lang,
+      name: $("f-name").value.trim(), telefon: $("f-phone").value.trim(), wohnort: $("f-addr").value.trim(), datum: "",
+      nachricht: ($("f-msg").value.trim() + " | Sofortiger Beginn gewünscht: ja").replace(/^ \| /, ""), begleitung: escortBooked() ? "ja" : "nein", preis: "", dateien};
+    const res = await fetch(UPLOAD_ENDPOINT, {method:"POST", body: JSON.stringify(payload)});
+    if (!res.ok) throw new Error(res.status);
+    const out = await res.json(); if (!out.ok) throw new Error(out.error);
+    busy = false; finish(ref, false);
+  } catch(x){ busy = false; render(); showErr(t("errSend")); }
+}
+
+$("next").addEventListener("click", () => { if (busy || !valid()) return; if (step === 4) submit(); else go(step === 2 ? 4 : step + 1); });
+$("back").addEventListener("click", () => { if (!busy && step > 1) go(step === 4 ? 2 : step - 1); });
+$("escort-no").addEventListener("click", () => { escort = false; renderEscort(); });
+$("escort-yes").addEventListener("click", () => { escort = true; renderEscort(); });
+$("f-consent").addEventListener("change", () => { $("consent-box").classList.remove("bad"); showErr(""); });
+$("f-start").addEventListener("change", () => { $("start-box").classList.remove("bad"); showErr(""); });
+document.querySelectorAll("[data-legal]").forEach(b => b.addEventListener("click", () => { legal = b.dataset.legal; showErr(""); render(); window.scrollTo(0, 0); }));
+$("legal-back").addEventListener("click", () => { legal = ""; render(); window.scrollTo(0, 0); });
+$("copy").addEventListener("click", () => {
+  const shown = () => { $("copy").textContent = t("copied"); };
+  const fallback = () => { const u = $("copy-url"); u.textContent = SITE_URL; u.hidden = false; };
+  try { navigator.clipboard.writeText(SITE_URL).then(shown, fallback); } catch(e){ fallback(); }
+});
+document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => {
+  lang = b.dataset.lang; try { localStorage.setItem("bashke-lang", lang); } catch(e){}
+  render();
+}));
+render();
+</script>
+</body>
+</html>
