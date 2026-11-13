@@ -249,7 +249,7 @@ de:{
  introTime:"Die Anfrage dauert etwa 2 Minuten.", start:"Jetzt starten",
  s1Title:"Was brauchen Sie?", s1Hint:"Tippen Sie auf alles, was Sie brauchen.",
  priceReq:"Preis auf Anfrage",
- deal:"Angebot: 1 Antrag 20 €, 2 Anträge zusammen nur 30 €.",
+ deal:"Jeder weitere Antrag im selben Auftrag ist 10 € günstiger.",
  s2Title:"Wie erreichen wir Sie?", name:"Ihr Name", phone:"Ihre Telefonnummer", addr:"Ihre Adresse (Straße, Hausnummer, PLZ, Ort)", sumAddr:"Adresse",
  escortQ:"Soll jemand mit zum Termin kommen und übersetzen?", escortNo:"Nein", escortYes:"Ja",
  msg:"Möchten Sie uns noch etwas sagen? (freiwillig)",
@@ -286,7 +286,7 @@ sq:{
  introTime:"Kërkesa zgjat rreth 2 minuta.", start:"Fillo tani",
  s1Title:"Çfarë ju duhet?", s1Hint:"Prekni gjithçka që ju duhet.",
  priceReq:"Çmimi sipas kërkesës",
- deal:"Ofertë: 1 aplikim 20 €, 2 aplikime së bashku vetëm 30 €.",
+ deal:"Çdo aplikim tjetër në të njëjtën porosi është 10 € më lirë.",
  s2Title:"Si t'ju kontaktojmë?", name:"Emri juaj", phone:"Numri juaj i telefonit", addr:"Adresa juaj (rruga, numri, kodi postar, qyteti)", sumAddr:"Adresa",
  escortQ:"A doni që dikush të vijë me ju në termin dhe të përkthejë?", escortNo:"Jo", escortYes:"Po",
  msg:"Doni të na thoni edhe diçka? (nuk është e detyrueshme)",
@@ -336,31 +336,28 @@ const DOCS = {
 
 
 const SERVICES = [
- {id:"verl",docs:["pass","eat","foto","melde","miete","arbeit","lohn","kv"],
+ {id:"verl",price:29,docs:["pass","eat","foto","melde","miete","arbeit","lohn","kv"],
   de:["Aufenthaltstitel verlängern","Die Aufenthaltserlaubnis läuft bald ab."],
   sq:["Vazhdimi i lejes së qëndrimit","Leja e qëndrimit skadon së shpejti."]},
- {id:"job",docs:["pass","eat","arbeit","stelle","kuend"],
+ {id:"job",price:39,docs:["pass","eat","arbeit","stelle","kuend"],
   de:["Arbeitgeberwechsel","Neue Stelle der Behörde melden oder erlauben lassen."],
   sq:["Ndërrimi i punëdhënësit","Lajmërimi ose leja për vendin e ri të punës."]},
- {id:"erst",docs:["passvisum","foto","melde","miete","arbeit","kv"],
+ {id:"erst",price:39,docs:["passvisum","foto","melde","miete","arbeit","kv"],
   de:["Erste Aufenthaltserlaubnis","Nach der Einreise mit Visum."],
   sq:["Leja e parë e qëndrimit","Pas hyrjes në Gjermani me vizë."]},
- {id:"nieder",docs:["pass","eat","foto","miete","arbeit","lohn","rente","sprache","kv"],
+ {id:"nieder",price:59,docs:["pass","eat","foto","miete","arbeit","lohn","rente","sprache","kv"],
   de:["Niederlassungserlaubnis","Unbefristeter Aufenthalt."],
   sq:["Leje qëndrimi e përhershme","Niederlassungserlaubnis, pa afat."]},
- {id:"fam",docs:["pass","partner","heirat","geburt","miete","lohn","sprache","kv"],
+ {id:"fam",price:59,docs:["pass","partner","heirat","geburt","miete","lohn","sprache","kv"],
   de:["Familiennachzug","Ehepartner oder Kinder nachholen."],
   sq:["Bashkim familjar","Për bashkëshortin/en ose fëmijët."]},
- {id:"ueber",docs:["neupass","altpass","eat","foto"],
+ {id:"ueber",price:29,docs:["neupass","altpass","eat","foto"],
   de:["Neuer Pass, Aufenthaltstitel übertragen","Der Titel muss in den neuen Pass."],
   sq:["Pasaportë e re, bartja e lejes","Leja duhet të kalojë në pasaportën e re."]},
- {id:"fiktion",docs:["pass","eat","melde","brief"],
+ {id:"fiktion",price:29,docs:["pass","eat","melde","brief"],
   de:["Fiktionsbescheinigung","Der Titel läuft ab, der Termin kommt später."],
   sq:["Vërtetim i përkohshëm (Fiktionsbescheinigung)","Leja skadon, por termini është më vonë."]},
- {id:"vpe",docs:["ausweis","gast","arbeit","lohn","miete"],
-  de:["Verpflichtungserklärung","Einladung für Besuch aus dem Ausland."],
-  sq:["Deklaratë garancie (Verpflichtungserklärung)","Ftesë për vizitë nga jashtë."]},
- {id:"einb",docs:["pass","eat","geburt","sprache","test","rente","lohn","miete"],
+ {id:"einb",price:59,docs:["pass","eat","geburt","sprache","test","rente","lohn","miete"],
   de:["Einbürgerung","Antrag auf die deutsche Staatsangehörigkeit."],
   sq:["Shtetësia gjermane (Einbürgerung)","Aplikimi për shtetësinë gjermane."]},
  {id:"begl",escort:true,docs:["termin","brief","pass","eat"],
@@ -381,7 +378,7 @@ const cnt = (n, one, many) => n === 1 ? t(one) : t(many).replace("{n}", n);
 try { const s = localStorage.getItem("bashke-lang"); if (s === "de" || s === "sq") lang = s; else if ((navigator.language||"").toLowerCase().startsWith("sq")) lang = "sq"; } catch(e){}
 
 function isApp(s){ return !s.escort && s.id !== "sonst"; }
-function basePrice(s){ return !isApp(s) ? null : (selected.filter(isApp).length >= 2 ? 15 : 20); }
+function basePrice(s){ return s.price || null; }
 function hasEscortSvc(){ return selected.some(s => s.escort); }
 function escortBooked(){ return hasEscortSvc() || escort; }
 function ordered(){ return SERVICES.filter(s => selected.includes(s)); }
@@ -391,6 +388,7 @@ function fileCount(){ return slotKeys().reduce((n, k) => n + (files[k] || []).le
 function priceText(){
   let sum = 0, open = false;
   selected.forEach(s => { const b = basePrice(s); if (b === null) open = true; else sum += b; });
+  const n = selected.filter(s => s.price).length; if (n > 1) sum -= 10 * (n - 1);
   if (!hasEscortSvc() && escort) open = true;
   if (!sum) return t("priceReq");
   return sum + " €" + (open ? " + " + t("priceReq") : "");
