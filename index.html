@@ -228,7 +228,7 @@ const UPLOAD_ENDPOINT = "https://script.google.com/macros/s/AKfycbwwSUPV2ZeDTQMJ
 /* ---- Deine Angaben für Impressum und Datenschutz. Solange etwas leer ist, steht auf den Rechtsseiten "Entwurf". ---- */
 const OWNER = { name: "", street: "", city: "", email: "", phone: "", host: "", deleteDays: 30 };
 const SITE_URL = "https://zcrystxlz.github.io/bashke/";
-const MAX_MB = 15, TOTAL_MB = 25, ESCORT_PRICE = 79;
+const MAX_MB = 15, TOTAL_MB = 25, ESCORT_PRICE = 69;
 function toB64(f){ return new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(f); }); }
 
 const T = {
@@ -251,7 +251,7 @@ de:{
  priceReq:"Preis auf Anfrage",
  deal:"Jeder weitere Antrag im selben Auftrag ist 10 € günstiger.",
  s2Title:"Wie erreichen wir Sie?", name:"Ihr Name", phone:"Ihre Telefonnummer", addr:"Ihre Adresse (Straße, Hausnummer, PLZ, Ort)", sumAddr:"Adresse",
- escortQ:"Soll jemand mit zum Termin kommen und übersetzen?", escortNo:"Nein", escortYes:"Ja",
+ escortQ:"Soll jemand mit zum Termin kommen und übersetzen?", escortNo:"Nein", escortYes:"Ja (+69 €)",
  msg:"Möchten Sie uns noch etwas sagen? (freiwillig)",
  s3Title:"Fotos von Ihren Dokumenten", s3Hint:"Machen Sie von jedem Dokument ein Foto. Fehlt etwas? Kein Problem, Sie können es später schicken.",
  pick:"Foto hinzufügen", add:"Noch ein Foto hinzufügen", missing:"Fehlt noch", has1:"✓ 1 Datei", hasN:"✓ {n} Dateien", remove:"Entfernen",
@@ -288,7 +288,7 @@ sq:{
  priceReq:"Çmimi sipas kërkesës",
  deal:"Çdo aplikim tjetër në të njëjtën porosi është 10 € më lirë.",
  s2Title:"Si t'ju kontaktojmë?", name:"Emri juaj", phone:"Numri juaj i telefonit", addr:"Adresa juaj (rruga, numri, kodi postar, qyteti)", sumAddr:"Adresa",
- escortQ:"A doni që dikush të vijë me ju në termin dhe të përkthejë?", escortNo:"Jo", escortYes:"Po",
+ escortQ:"A doni që dikush të vijë me ju në termin dhe të përkthejë?", escortNo:"Jo", escortYes:"Po (+69 €)",
  msg:"Doni të na thoni edhe diçka? (nuk është e detyrueshme)",
  s3Title:"Foto të dokumenteve tuaja", s3Hint:"Bëni një foto të çdo dokumenti. Mungon diçka? S'ka problem, mund ta dërgoni më vonë.",
  pick:"Shto foto", add:"Shto edhe një foto", missing:"Ende mungon", has1:"✓ 1 skedar", hasN:"✓ {n} skedarë", remove:"Hiq",
@@ -360,7 +360,7 @@ const SERVICES = [
  {id:"einb",price:59,docs:["pass","eat","geburt","sprache","test","rente","lohn","miete"],
   de:["Einbürgerung","Antrag auf die deutsche Staatsangehörigkeit."],
   sq:["Shtetësia gjermane (Einbürgerung)","Aplikimi për shtetësinë gjermane."]},
- {id:"begl",escort:true,docs:["termin","brief","pass","eat"],
+ {id:"begl",price:69,escort:true,docs:["termin","brief","pass","eat"],
   de:["Begleitung zum Termin","Wir begleiten Sie und übersetzen vor Ort."],
   sq:["Shoqërim në termin","Ju shoqërojmë dhe përkthejmë në vend."]},
  {id:"sonst",docs:["brief"],
@@ -388,8 +388,8 @@ function fileCount(){ return slotKeys().reduce((n, k) => n + (files[k] || []).le
 function priceText(){
   let sum = 0, open = false;
   selected.forEach(s => { const b = basePrice(s); if (b === null) open = true; else sum += b; });
-  const n = selected.filter(s => s.price).length; if (n > 1) sum -= 10 * (n - 1);
-  if (!hasEscortSvc() && escort) open = true;
+  const n = selected.filter(s => s.price && !s.escort).length; if (n > 1) sum -= 10 * (n - 1);
+  if (!hasEscortSvc() && escort) sum += ESCORT_PRICE;
   if (!sum) return t("priceReq");
   return sum + " €" + (open ? " + " + t("priceReq") : "");
 }
