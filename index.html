@@ -58,7 +58,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;fl
 .deal{background:var(--mark);color:var(--mark-ink);font-weight:600;padding:8px 12px;border-radius:8px;align-self:flex-start}
 
 .services{display:flex;flex-direction:column;gap:10px}
-.svc{font:inherit;color:inherit;text-align:left;background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:14px;min-height:64px;cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center}
+.svc{font:inherit;color:inherit;text-align:left;background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:14px;min-height:64px;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
 .svc .tick{width:30px;height:30px;border:2px solid var(--muted);border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:1.2rem;color:transparent;background:var(--surface)}
 .svc .txt{display:flex;flex-direction:column;min-width:0}
 .svc b{font:700 1.08rem var(--display)}
@@ -156,6 +156,7 @@ footer{font-size:.85rem;color:var(--muted);display:flex;flex-direction:column;ga
     <section class="step" id="step-1" hidden>
       <h1 tabindex="-1" data-i18n="s1Title"></h1>
       <p class="hint" data-i18n="s1Hint"></p>
+      <p class="deal" data-i18n="deal"></p>
       <div class="services" id="services"></div>
       <p class="muted small" data-i18n="s1Note"></p>
     </section>
@@ -248,6 +249,7 @@ de:{
  introTime:"Die Anfrage dauert etwa 2 Minuten.", start:"Jetzt starten",
  s1Title:"Was brauchen Sie?", s1Hint:"Tippen Sie auf alles, was Sie brauchen.",
  priceReq:"Preis auf Anfrage",
+ deal:"Angebot: 1 Antrag 20 €, 2 Anträge zusammen nur 30 €.",
  s2Title:"Wie erreichen wir Sie?", name:"Ihr Name", phone:"Ihre Telefonnummer", addr:"Ihre Adresse (Straße, Hausnummer, PLZ, Ort)", sumAddr:"Adresse",
  escortQ:"Soll jemand mit zum Termin kommen und übersetzen?", escortNo:"Nein", escortYes:"Ja",
  msg:"Möchten Sie uns noch etwas sagen? (freiwillig)",
@@ -284,6 +286,7 @@ sq:{
  introTime:"Kërkesa zgjat rreth 2 minuta.", start:"Fillo tani",
  s1Title:"Çfarë ju duhet?", s1Hint:"Prekni gjithçka që ju duhet.",
  priceReq:"Çmimi sipas kërkesës",
+ deal:"Ofertë: 1 aplikim 20 €, 2 aplikime së bashku vetëm 30 €.",
  s2Title:"Si t'ju kontaktojmë?", name:"Emri juaj", phone:"Numri juaj i telefonit", addr:"Adresa juaj (rruga, numri, kodi postar, qyteti)", sumAddr:"Adresa",
  escortQ:"A doni që dikush të vijë me ju në termin dhe të përkthejë?", escortNo:"Jo", escortYes:"Po",
  msg:"Doni të na thoni edhe diçka? (nuk është e detyrueshme)",
@@ -378,7 +381,7 @@ const cnt = (n, one, many) => n === 1 ? t(one) : t(many).replace("{n}", n);
 try { const s = localStorage.getItem("bashke-lang"); if (s === "de" || s === "sq") lang = s; else if ((navigator.language||"").toLowerCase().startsWith("sq")) lang = "sq"; } catch(e){}
 
 function isApp(s){ return !s.escort && s.id !== "sonst"; }
-function basePrice(s){ return s.escort ? ESCORT_PRICE : !isApp(s) ? null : (selected.filter(isApp).length >= 2 ? 25 : 39); }
+function basePrice(s){ return !isApp(s) ? null : (selected.filter(isApp).length >= 2 ? 15 : 20); }
 function hasEscortSvc(){ return selected.some(s => s.escort); }
 function escortBooked(){ return hasEscortSvc() || escort; }
 function ordered(){ return SERVICES.filter(s => selected.includes(s)); }
@@ -388,7 +391,7 @@ function fileCount(){ return slotKeys().reduce((n, k) => n + (files[k] || []).le
 function priceText(){
   let sum = 0, open = false;
   selected.forEach(s => { const b = basePrice(s); if (b === null) open = true; else sum += b; });
-  if (!hasEscortSvc() && escort) sum += ESCORT_PRICE;
+  if (!hasEscortSvc() && escort) open = true;
   if (!sum) return t("priceReq");
   return sum + " €" + (open ? " + " + t("priceReq") : "");
 }
@@ -412,7 +415,9 @@ function renderServices(){
     const n = document.createElement("b"); n.textContent = s[lang][0];
     const d = document.createElement("small"); d.textContent = s[lang][1];
     txt.append(n, d);
-    b.append(tick, txt);
+    const pr = document.createElement("span"); pr.className = "price";
+    const bp = basePrice(s); pr.textContent = bp === null ? "" : bp + " €";
+    b.append(tick, txt, pr);
     b.addEventListener("click", () => {
       selected = selected.includes(s) ? selected.filter(x => x !== s) : selected.concat(s);
       showErr(""); renderServices(); $("svc-" + s.id).focus();
@@ -474,6 +479,7 @@ function renderSum(){
   row(t("sumName"), $("f-name").value.trim());
   row(t("sumPhone"), $("f-phone").value.trim());
   row(t("sumAddr"), $("f-addr").value.trim());
+  row(t("total"), priceText(), "total");
 }
 
 function legalDoc(kind){
@@ -577,7 +583,7 @@ async function submit(){
     for (const [k, f] of all) dateien.push({slot: DOCS[k].de, name: f.name, typ: f.type || "application/octet-stream", daten: await toB64(f)});
     const payload = {referenz: ref, anliegen: ordered().map(x => x.de[0]).join("; "), sprache: lang,
       name: $("f-name").value.trim(), telefon: $("f-phone").value.trim(), wohnort: $("f-addr").value.trim(), datum: "",
-      nachricht: ($("f-msg").value.trim() + " | Sofortiger Beginn gewünscht: ja").replace(/^ \| /, ""), begleitung: escortBooked() ? "ja" : "nein", preis: "", dateien};
+      nachricht: ($("f-msg").value.trim() + " | Sofortiger Beginn gewünscht: ja").replace(/^ \| /, ""), begleitung: escortBooked() ? "ja" : "nein", preis: "Preis: " + priceText(), dateien};
     const res = await fetch(UPLOAD_ENDPOINT, {method:"POST", body: JSON.stringify(payload)});
     if (!res.ok) throw new Error(res.status);
     const out = await res.json(); if (!out.ok) throw new Error(out.error);
