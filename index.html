@@ -71,6 +71,7 @@ p{margin:0}
 @media (max-width:520px){.hero-text .eyebrow{display:none}.hero-text{gap:14px}h1{font-size:2rem}}
 .chips{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
 .chips li{font:600 .88rem var(--body);background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:6px 12px}
+.chips li.hl{background:var(--mark);border-color:var(--mark);color:var(--mark-ink)}
 .ctas{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .portrait{position:relative;width:min(46vw,180px);justify-self:center;margin:14px 18px 4px 8px}
 .portrait::before{content:"";position:absolute;inset:0;background:var(--mark);border-radius:28px;transform:translate(-14px,14px) rotate(-6deg)}
@@ -211,6 +212,7 @@ footer .in{display:flex;flex-direction:column;gap:10px}
           <a class="btn ghost" href="#ueber-mich" data-jump="ueber-mich" data-i18n="ctaMore"></a>
         </div>
         <ul class="chips">
+          <li class="hl" data-i18n="chip0"></li>
           <li data-i18n="chip1"></li>
           <li data-i18n="chip2"></li>
           <li data-i18n="chip3"></li>
@@ -369,12 +371,12 @@ de:{
  heroEyebrow:"Hilfe bei der Ausländerbehörde",
  heroTitle:"Gemeinsam durch die Bürokratie.",
  heroText:"Ich bin Erjon und kümmere mich für Sie um Ihre Anträge bei der Ausländerbehörde: Ich fülle sie mit Ihnen aus, übersetze und stelle sie gemeinsam mit Ihnen. Auf Wunsch komme ich mit zum Termin. Auf Deutsch und Albanisch.",
- chip1:"Gebürtiger Stuttgarter", chip2:"Deutsch & Albanisch", chip3:"Persönlich, nicht anonym",
+ chip0:"Bekannt durch Weiterempfehlung", chip1:"Gebürtiger Stuttgarter", chip2:"Deutsch & Albanisch", chip3:"Persönlich, nicht anonym",
  ctaStart:"Anfrage starten", ctaMore:"Mehr über mich",
  aboutEyebrow:"Über mich", aboutTitle:"Warum ich das mache",
  about1:"Ich bin Erjon Gashi, gebürtiger Stuttgarter, und studiere Wirtschaftswissenschaften.",
  about2:"Angefangen hat alles damit, dass ich Freunden und Familie bei ihren Anträgen geholfen habe. Dabei habe ich gesehen, wie schwer das vielen fällt: Formulare nur auf Deutsch, Briefe voller Amtssprache und Fristen, die man leicht verpasst.",
- about3:"Das hat sich herumgesprochen. Heute helfe ich jedem, der dabei Unterstützung braucht, persönlich und verständlich.",
+ about3:"Das hat sich herumgesprochen: Heute kommen die meisten über eine Empfehlung zu mir. Ich helfe jedem, der dabei Unterstützung braucht, persönlich und verständlich.",
  howEyebrow:"Ablauf", howTitle:"So läuft es ab",
  how1t:"Anfrage senden", how1:"Sie wählen Ihr Anliegen und hinterlassen Ihre Nummer. Das dauert etwa 2 Minuten.",
  how2t:"Ich melde mich", how2:"Ich rufe Sie persönlich an. Wir besprechen, welche Unterlagen Sie brauchen, und den Preis.",
@@ -415,12 +417,12 @@ sq:{
  heroEyebrow:"Ndihmë me zyrën e të huajve",
  heroTitle:"Bashkë përmes burokracisë.",
  heroText:"Jam Erjoni dhe kujdesem për aplikimet tuaja në zyrën e të huajve: i plotësoj bashkë me ju, përkthej dhe i dorëzojmë së bashku. Nëse dëshironi, vij me ju në termin. Në gjermanisht dhe shqip.",
- chip1:"I lindur në Shtutgart", chip2:"Gjermanisht & shqip", chip3:"Personalisht, jo anonim",
+ chip0:"I njohur me rekomandime", chip1:"I lindur në Shtutgart", chip2:"Gjermanisht & shqip", chip3:"Personalisht, jo anonim",
  ctaStart:"Fillo kërkesën", ctaMore:"Më shumë për mua",
  aboutEyebrow:"Për mua", aboutTitle:"Pse e bëj këtë",
  about1:"Jam Erjon Gashi, i lindur në Shtutgart, dhe studioj Shkencat Ekonomike.",
  about2:"Gjithçka filloi kur ndihmova shokët dhe familjen me aplikimet e tyre. Aty pashë sa e vështirë është për shumë njerëz: formularë vetëm në gjermanisht, letra me gjuhë zyrtare dhe afate që humbasin lehtë.",
- about3:"Kjo u përhap nga goja në gojë. Sot ndihmoj këdo që ka nevojë për mbështetje, personalisht dhe qartë.",
+ about3:"Kjo u përhap nga goja në gojë: sot shumica vijnë tek unë me rekomandim. Ndihmoj këdo që ka nevojë për mbështetje, personalisht dhe qartë.",
  howEyebrow:"Si funksionon", howTitle:"Si funksionon",
  how1t:"Dërgoni kërkesën", how1:"Zgjidhni çështjen tuaj dhe lini numrin tuaj. Zgjat rreth 2 minuta.",
  how2t:"Ju kontaktoj unë", how2:"Ju telefonoj personalisht. Flasim se cilat dokumente ju duhen dhe për çmimin.",
